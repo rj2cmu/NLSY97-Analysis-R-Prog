@@ -1,6 +1,6 @@
 ---
-title: "Final project starter script"
-author: "Prof. Chouldechova"
+title: "Exploring differences in Income across Gender: a Longitudinal Study"
+author: "Anum Malik, Javier Rico Aristizabal, Rishabh Jain"
 date: ''
 output: html_document
 ---
