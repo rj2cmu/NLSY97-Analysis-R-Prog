@@ -1,5 +1,5 @@
 ---
-title: "NLSY97 Analysis (Sex Based)"
+title: "NLSY97 Analysis (Based on Gender)"
 author: "Anum Malik, Rishabh Jain, Javier Rico Aristizabal"
 date: ''
 output: html_document
@@ -38,77 +38,77 @@ colnames(nlsy) <- c("PSTRAN_GPA.01_PSTR",
     "YSCH-36400_1997",
     "YSCH-37000_1997",
     "YSAQ-010_1997",
-    "YSAQ-369_1997",
+    "Marijuana_1997", #YSAQ-369_1997
     "YEXP-300_1997",
-    "YEXP-1500_1997",
+    "%Ch.Dip.20_1997", #YEXP-1500_1997
     "YEXP-1600_1997",
-    "YEXP-1800_1997",
-    "YEXP-2000_1997",
-    "sex",
-    "KEY_BDATE_M_1997",
-    "KEY_BDATE_Y_1997",
+    "%Ch.Baby_1997", #YEXP-1800_1997
+    "%Ch.Coll.Degree.30_1997", #YEXP-2000_1997
+    "Sex",
+    "BDATE_M_1997", #KEY_BDATE_M_1997
+    "BDATE_Y_1997", #KEY_BDATE_Y_1997
     "PC8-090_1997",
     "PC8-092_1997",
     "PC9-002_1997",
-    "PC12-024_1997",
-    "PC12-028_1997",
+    "Dep_F_1997", #PC12-024_1997
+    "Dep_M_1997", #PC12-028_1997
     "CV_AGE_12/31/96_1997",
     "CV_BIO_MOM_AGE_CHILD1_1997",
     "CV_BIO_MOM_AGE_YOUTH_1997",
     "CV_CITIZENSHIP_1997",
     "CV_ENROLLSTAT_1997",
-    "CV_HH_NET_WORTH_P_1997",
+    "HH_NET_WORTH_P_1997", #CV_HH_NET_WORTH_P_1997
     "CV_YTH_REL_HH_CURRENT_1997",
     "CV_MSA_AGE_12_1997",
     "CV_URBAN-RURAL_AGE_12_1997",
     "CV_SAMPLE_TYPE_1997",
     "CV_HGC_BIO_DAD_1997",
     "CV_HGC_BIO_MOM_1997",
-    "CV_HGC_RES_DAD_1997",
-    "CV_HGC_RES_MOM_1997",
-    "race",
+    "Highest.Grade_RES_DAD_1997", #CV_HGC_RES_DAD_1997
+    "Highest.Grade_RES_MOM_1997", #CV_HGC_RES_MOM_1997
+    "Race",
     "YSCH-6800_1998",
     "YSCH-7300_1998",
-    "YSAQ-372B_1998",
+    "Ever_Used_Coca_1998", #YSAQ-372B_1998
     "YSAQ-371_2000",
-    "YSAQ-282J_2002",
+    "Disorganized_2002", #YSAQ-282J_2002
     "YSAQ-282Q_2002",
-    "CV_HH_NET_WORTH_Y_2003",
+    "HH_NET_WORTH_Y_2003", #CV_HH_NET_WORTH_Y_2003
     "CV_BA_CREDITS.01_2004",
-    "YSAQ-000B_2004",
+    "YSAQ-000B_2004", 
     "YSAQ-373_2004",
-    "YSAQ-369_2005",
-    "CV_BIO_CHILD_HH_2007",
+    "Marijuana_2005", #YSAQ-369_2005
+    "Children_HH_2007", #CV_BIO_CHILD_HH_2007
     "YTEL-52~000001_2007",
     "YTEL-52~000002_2007",
     "YTEL-52~000003_2007",
     "YTEL-52~000004_2007",
-    "CV_BIO_CHILD_HH_2009",
+    "Children_HH_2009", #CV_BIO_CHILD_HH_2009
     "CV_COLLEGE_TYPE.01_2011",
-    "CV_INCOME_FAMILY_2011",
+    "Family_Income_2011", #CV_INCOME_FAMILY_2011
     "CV_HH_SIZE_2011",
     "CV_HH_UNDER_18_2011",
     "CV_HH_UNDER_6_2011",
-    "CV_HIGHEST_DEGREE_1112_2011",
-    "CV_BIO_CHILD_HH_2011",
-    "YSCH-3112_2011",
-    "YSAQ-000A000001_2011",
-    "YSAQ-000A000002_2011",
-    "YSAQ-000B_2011",
+    "Highest_Degree_Prior_2011/12", #CV_HIGHEST_DEGREE_1112_2011
+    "Children_HH_2011", #CV_BIO_CHILD_HH_2011
+    "Highest_Grade_Completed_2011", #YSCH-3112_2011
+    "YSAQ-000A000001_2011", 
+    "Height.Inch_2011", #YSAQ-000A000002_2011
+    "Weight.Pound_2011", #YSAQ-000B_2011
     "YSAQ-360C_2011",
     "YSAQ-364D_2011",
-    "YSAQ-371_2011",
-    "YSAQ-372CC_2011",
+    "YSAQ-371_2011", 
+    "Hard.drugs.DLI_2011", #YSAQ-372CC_2011
     "YSAQ-373_2011",
     "YSAQ-374_2011",
-    "YEMP_INDCODE-2002.01_2011",
-    "CV_BIO_CHILD_HH_2015",
-    "YEMP_INDCODE-2002.01_2017",
-    "YEMP_OCCODE-2002.01_2017",
-    "CV_MARSTAT_COLLAPSED_2017",
+    "Industry_Code_2011", #YEMP_INDCODE-2002.01_2011
+    "Children_HH_2015", #CV_BIO_CHILD_HH_2015
+    "Industry_Code_2017", #YEMP_INDCODE-2002.01_2017
+    "Occupation_Code_2017", #YEMP_OCCODE-2002.01_2017
+    "MaritalStatus_2017", #CV_MARSTAT_COLLAPSED_2017
     "YINC-1400_2017",
-    "income",
-    "YINC-1800_2017",
+    "Income",
+    "YINC-1800_2017", 
     "YINC-2400_2017",
     "YINC-2600_2017",
     "YINC-2700_2017",
@@ -116,15 +116,15 @@ colnames(nlsy) <- c("PSTRAN_GPA.01_PSTR",
     "CVC_SAT_MATH_SCORE_2007_XRND",
     "CVC_SAT_VERBAL_SCORE_2007_XRND",
     "CVC_ACT_SCORE_2007_XRND",
-    "CVC_HH_NET_WORTH_20_XRND",
-    "CVC_HH_NET_WORTH_25_XRND",
-    "CVC_ASSETS_FINANCIAL_25_XRND",
-    "CVC_ASSETS_DEBTS_20_XRND",
-    "CVC_HH_NET_WORTH_30_XRND",
+    "HH_NET_WORTH_20", #CVC_HH_NET_WORTH_20_XRND
+    "HH_NET_WORTH_25", #CVC_HH_NET_WORTH_25_XRND
+    "ASSETS_FINANCIAL_25", #CVC_ASSETS_FINANCIAL_25_XRND
+    "ASSETS_DEBTS_20", #CVC_ASSETS_DEBTS_20_XRND
+    "HH_NET_WORTH_30", #CVC_HH_NET_WORTH_30_XRND
     "CVC_HOUSE_VALUE_30_XRND",
     "CVC_HOUSE_TYPE_30_XRND",
-    "CVC_ASSETS_FINANCIAL_30_XRND",
-    "CVC_ASSETS_DEBTS_30_XRND")
+    "ASSETS_FINANCIAL", #CVC_ASSETS_FINANCIAL_30_XRND
+    "ASSETS_DEBTS_30") #CVC_ASSETS_DEBTS_30_XRND
 
 ### Set all negative values to NA.  
 ### THIS IS DONE ONLY FOR ILLUSTRATIVE PURPOSES
@@ -201,10 +201,10 @@ n.topcoded <- with(nlsy, sum(income == max(income, na.rm = TRUE), na.rm = TRUE))
 n.topcoded
 ```
 
-`r n.topcoded` of the incomes are topcoded to the maximum value of `r max(nlsy$income, na.rm = TRUE)`, which is the average value of the top `r n.topcoded` earners.    You will want to think about how  to deal with this in your analysis.
+`r n.topcoded` of the incomes are topcoded to the maximum value of `r max(nlsy$income, na.rm = TRUE)`, which is the average value of the top `r n.topcoded` earners. You will want to think about how  to deal with this in your analysis.
 
 
-The fllowing data `CV_BIO_MOM_AGE_CHILD1_1997` presents the age of biological mother at first birth, differenciating by sex.
+The following data `CV_BIO_MOM_AGE_CHILD1_1997` presents the age of biological mother at first birth, differenciating by sex.
 ```{r}
 nlsy <- nlsy %>%
   mutate(sex = recode_factor(sex,
@@ -284,14 +284,37 @@ plot.mom.grade + geom_bar(stat = "identity") +
 ```
 
 ```{r}
+nlsy.recode <- nlsy %>%
+  mutate(sex = recode_factor(sex,
+                                `1` = "Men",
+                                `2` = "Female",
+                                `0` = "No Information"))
 
+
+income.gender <- nlsy.recode %>%
+  group_by(sex) %>%
+  summarize(average.income = mean(income, na.rm = TRUE), 
+            median.income = median(income, na.rm = TRUE))
+
+kable(income.gender, format = "markdown", digits = 3)
 
 ```
+<font color="#157515">
+When assessing the data via a preliminary scan, we see that the average income for men is `r income.gender$average.income[1]` and the average income for women is `r income.gender$average.income[2]`, which is amounts to a difference of `r income.gender$average.income[1] - income.gender$average.income[2]`.
 
+</font>
 
-```{r, fig.align='center', fig.width=7, fig.height=4}
-qplot(nlsy$CVC_ASSETS_FINANCIAL_30_XRND)
-
-table.mom.age <- table(nlsy$CV_HGC_RES_MOM_1997, nlsy$sex)
-table.mom.age
+```{r}
+ggplot(nlsy.recode, aes(income, fill = sex)) + geom_histogram(alpha = 0.5, position = 'identity') +
+  labs (x = "Income", y = "Number of Respondents")
 ```
+
+<font color="#157515">
+With the histogram, we see that the number of respondents for the lower income ranges are higher for women compared to men whereas as the income progresses on the x-axis; we see men take the lead. Furthermore, we can assess that the data-set is left-skewed, which is why for the purpose of our analysis we will use the median income. 
+
+</font>
+
+```{r}
+income.industries <- nlsy.recode %>%
+  group_by(sex, Industry_Code_2017) %>%
+  summarize(median.income = median(income, na.rm = TRUE))
