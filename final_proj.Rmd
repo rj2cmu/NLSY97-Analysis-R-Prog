@@ -18,7 +18,6 @@ library(knitr)
 ```{r}
 # Import starting data
 nlsy <- read_csv("http://www.andrew.cmu.edu/user/achoulde/94842/final_project/nlsy97/nlsy97_Nov2020.csv")
-nlsy
 ```
 
 #### Variables present in the base data set
@@ -171,9 +170,9 @@ This description says that the numbers -1, -2, -4 and -5 all have a special mean
 In the previous chunk of code we have appropriately renamed the variables corresponding to `sex`, `race` and `income` (as reported on the 2017 survey).  Let's have a quick look at what we're working with.
 
 ```{r}
-table(nlsy$sex)
+table(nlsy$Sex)
 
-table(nlsy$race)
+table(nlsy$Race)
 ```
 
 The data codebook tells us that the coding for sex is `Male = 1`, `Female = 2`.  For the race/ethnicity variable, the coding is:
@@ -188,16 +187,16 @@ The data codebook tells us that the coding for sex is `Male = 1`, `Female = 2`. 
 You'll want to do some data manipulations to change away from the numeric codings to more interpretable labels. 
 
 ```{r}
-summary(nlsy$income)
+summary(nlsy$Income)
 
 # Histogram
-qplot(nlsy$income)
+qplot(nlsy$Income)
 ```
 
 The income distributing is right-skewed like one might expect.  However, as indicated in the question description, the income variable is *topcoded* at the 2% level.  More precisely,
 
 ```{r}
-n.topcoded <- with(nlsy, sum(income == max(income, na.rm = TRUE), na.rm = TRUE))
+n.topcoded <- with(nlsy, sum(Income == max(Income, na.rm = TRUE), na.rm = TRUE))
 n.topcoded
 ```
 
@@ -207,17 +206,17 @@ n.topcoded
 The following data `CV_BIO_MOM_AGE_CHILD1_1997` presents the age of biological mother at first birth, differenciating by sex.
 ```{r}
 nlsy <- nlsy %>%
-  mutate(sex = recode_factor(sex,
-                                `1` = "Men",
-                                `2` = "Female",
-                                `0` = "No Information"))
+  mutate(Sex = recode_factor(Sex,
+                             `1` = "Men",
+                             `2` = "Female",
+                             `0` = "No Information"))
 mom.age.sex <- nlsy %>%
-  select(sex, CV_BIO_MOM_AGE_CHILD1_1997)
+  select(Sex, CV_BIO_MOM_AGE_CHILD1_1997)
 qplot(data = mom.age.sex,
       geom = "boxplot",
-      x = sex,
+      x = Sex,
       y = CV_BIO_MOM_AGE_CHILD1_1997,
-      fill = sex)
+      fill = Sex)
 ```
 <font color="#157515">
 The data presents ages that should be evaluated for biological mothers below 10 years old, and above 60 years old.
@@ -230,16 +229,16 @@ mom.age.sex <- data.frame(mom.age.sex)
 mom.age.sex <- mom.age.sex[!(mom.age.sex$CV_BIO_MOM_AGE_CHILD1_1997<12),]
 qplot(data = mom.age.sex,
       geom = "boxplot",
-      x = sex,
+      x = Sex,
       y = CV_BIO_MOM_AGE_CHILD1_1997,
-      fill = sex)
+      fill = Sex)
 ```
 
 ```{r}
 res.mother.highest.grade <- nlsy %>%
-  select(sex, CV_HGC_RES_MOM_1997)
+  select(Sex, Highest.Grade_RES_MOM_1997)
 resident.mother.highest.grade <- res.mother.highest.grade %>%
-  mutate(CV_HGC_RES_MOM_1997 = recode_factor(CV_HGC_RES_MOM_1997,
+  mutate(Highest.Grade_RES_MOM_1997 = recode_factor(Highest.Grade_RES_MOM_1997,
                                              `0` = "NONE",
                                              `1` = "1ST GRADE",
                                              `2` = "2ND GRADE",
@@ -264,16 +263,16 @@ resident.mother.highest.grade <- res.mother.highest.grade %>%
                                              `20` = "4TH YEAR COLLEGE OR MORE"))
 
 mother.highest.grade <- resident.mother.highest.grade %>%
-  group_by(sex, CV_HGC_RES_MOM_1997) %>%
+  group_by(Sex, Highest.Grade_RES_MOM_1997) %>%
   summarize(n = n())
 mother.highest.grade <- as_tibble(mother.highest.grade)
 plot.mom.grade <- ggplot(data = mother.highest.grade,
-                         aes(x = CV_HGC_RES_MOM_1997,
+                         aes(x = Highest.Grade_RES_MOM_1997,
                              y = n,
                              fill = n))
 plot.mom.grade + geom_bar(stat = "identity") + 
   guides(fill = guide_legend(title = "Individuals in each bin")) +
-  facet_grid(.~ sex) +
+  facet_grid(.~ Sex) +
   theme(axis.text.x=element_text(angle = 90, vjust = 0.5))
 
 
@@ -285,16 +284,16 @@ plot.mom.grade + geom_bar(stat = "identity") +
 
 ```{r}
 nlsy.recode <- nlsy %>%
-  mutate(sex = recode_factor(sex,
+  mutate(Sex = recode_factor(Sex,
                                 `1` = "Men",
                                 `2` = "Female",
                                 `0` = "No Information"))
-
+nlsy.recode <- data_frame(nlsy.recode)
 
 income.gender <- nlsy.recode %>%
-  group_by(sex) %>%
-  summarize(average.income = mean(income, na.rm = TRUE), 
-            median.income = median(income, na.rm = TRUE))
+  group_by(Sex) %>%
+  summarize(average.income = mean(Income, na.rm = TRUE), 
+            median.income = median(Income, na.rm = TRUE))
 
 kable(income.gender, format = "markdown", digits = 3)
 
@@ -305,7 +304,7 @@ When assessing the data via a preliminary scan, we see that the average income f
 </font>
 
 ```{r}
-ggplot(nlsy.recode, aes(income, fill = sex)) + geom_histogram(alpha = 0.5, position = 'identity') +
+ggplot(nlsy.recode, aes(Income, fill = Sex)) + geom_histogram(alpha = 0.5, position = 'identity') +
   labs (x = "Income", y = "Number of Respondents")
 ```
 
@@ -316,5 +315,18 @@ With the histogram, we see that the number of respondents for the lower income r
 
 ```{r}
 income.industries <- nlsy.recode %>%
-  group_by(sex, Industry_Code_2017) %>%
-  summarize(median.income = median(income, na.rm = TRUE))
+  group_by(Sex, Industry_Code_2017) %>%
+  summarize(median.income = median(Income, na.rm = TRUE))
+nlsy.recode['Industry_2017'] <- NA
+nlsy.recode$Industry_Code_2017
+nlsy.recode <- nlsy.recode %>%
+  mutate(nlsy.recode, 
+         Industry_2017 = ifelse(Industry_Code_2017 >= 170 & Industry_Code_2017 <= 290, "AGRICULTURE, FORESTRY AND FISHERIES", "Other"))
+nlsy.recode$Industry_2017
+
+
+if(Industry_Code_2017 >= 170 & Industry_Code_2017 <= 290) {
+  nlsy.recode$Industry_2017 = "AGRICULTURE, FORESTRY AND FISHERIES"
+  }
+
+```
