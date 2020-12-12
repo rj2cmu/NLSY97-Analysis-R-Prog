@@ -340,11 +340,6 @@ With the histogram, we see that the number of respondents for the lower income r
 </font>
 
 ```{r}
-#income.industries <- nlsy.recode %>%
-  #group_by(Sex, Industry_Code_2017) %>%
-  #summarize(median.income = median(Income, na.rm = TRUE))
-#nlsy.recode['Industry_2017'] <- 'NA'
-#class(nlsy.recode$Industry_2017)
 nlsy.recode <- data_frame(nlsy.recode)
 industry.decoder <- c(rep(' AGRICULTURE, FORESTRY AND FISHERIES',121),rep('NA',79),
                     rep(' MINING',121),rep('NA',79),rep(' UTILITIES',121),
@@ -362,15 +357,55 @@ industry.decoder <- c(rep(' AGRICULTURE, FORESTRY AND FISHERIES',121),rep('NA',7
                     rep(' PUBLIC ADMINISTRATION',221),rep('NA',79),
                     rep(' ACTIVE DUTY MILITARY',221),rep('NA',59),rep(' ACS SPECIAL CODES',41))
 names(industry.decoder)<-170:9990
-avector <- nlsy.recode[['Industry_Code_2017']]
-avector <- sapply(avector, function(x) ifelse(x <= 9990, industry.decoder[as.character(x)], 'OTHER'))
 
-mutate(
+decode <- function(number) {
+  if (is.na(industry.decoder[as.character(number)])) 
+  {  text <- "OTHER"   }
+  else {
+    text <- industry.decoder[as.character(number)]   }
+  return (text)}
+
+nlsy.recode[["Industry_Code_2017"]] <- sapply(nlsy.recode[["Industry_Code_2017"]], decode)
+
+income.industries <- nlsy.recode %>%
+  group_by(Sex, Industry_Code_2017) %>%
+  summarize(average.income = mean(Income, na.rm = TRUE), .groups = 'keep')
+
+income.industries
+
+
 
 ```
 
 ```{r}
+nlsy.recode <- nlsy.recode %>%
+  mutate(MaritalStatus_2017 = recode_factor(MaritalStatus_2017,
+                                `0` = "Never-married",
+                                `1` = "Married",
+                                `2` = "Separated",
+                                `3` = "Divorced",
+                                `4` = "Widowed",
+                                `NA` = "Other"))
 
+income.gender.2<- nlsy.recode %>%
+  group_by(Sex, MaritalStatus_2017) %>%
+  summarize(average.income = mean(Income, na.rm = TRUE))
+
+income.gender.2
 ```
 
+```{r, fig.height = 4, fig.width = 8}
+ggplot(data = income.gender.2, aes(x = MaritalStatus_2017, y = average.income, fill = Sex)) + 
+  geom_bar(stat = "identity") + facet_grid(.~Sex) + coord_flip() + 
+  theme(axis.text.x=element_text(angle =- 90, vjust = 0.5), legend.position = "none") + 
+  labs( x = "Marital Status", y = "Average Income" )
 ```
+```{r ,fig.height = 7, fig.width = 8}
+ggplot(data = income.industries, aes(x = Industry_Code_2017, y = average.income, colour = Sex )) + geom_point() + stat_smooth(method = 'loess', formula = y ~ x, size = 1) + theme(axis.text.x=element_text(angle =- 90, vjust = 0.5)) + ylab("Average Income")
+```
+```{r}
+
+
+ggplot(data = nlsy.recode, aes(x = Income, y = Highest_Grade_Completed_2011 , colour = Industry_Code_2017 )) + geom_point() + stat_smooth(method = 'loess', formula = y ~ x, size = 1) + theme(axis.text.x=element_text(angle =- 90, vjust = 0.5))
+```
+
