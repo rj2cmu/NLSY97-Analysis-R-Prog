@@ -1,7 +1,7 @@
 ---
 title: "Final project starter script"
 author: "Anum Malik, Javier Rico, Rishabh Jain"
-date: ''
+date: '12-12-2020'
 output: html_document
 ---
 
@@ -18,6 +18,7 @@ library(knitr)
 ```{r}
 # Import starting data
 nlsy <- read_csv("http://www.andrew.cmu.edu/user/achoulde/94842/final_project/nlsy97/nlsy97_Nov2020.csv")
+nlsy
 ```
 
 #### Variables present in the base data set
@@ -201,3 +202,96 @@ n.topcoded
 ```
 
 `r n.topcoded` of the incomes are topcoded to the maximum value of `r max(nlsy$income, na.rm = TRUE)`, which is the average value of the top `r n.topcoded` earners.    You will want to think about how  to deal with this in your analysis.
+
+
+The fllowing data `CV_BIO_MOM_AGE_CHILD1_1997` presents the age of biological mother at first birth, differenciating by sex.
+```{r}
+nlsy <- nlsy %>%
+  mutate(sex = recode_factor(sex,
+                                `1` = "Men",
+                                `2` = "Female",
+                                `0` = "No Information"))
+mom.age.sex <- nlsy %>%
+  select(sex, CV_BIO_MOM_AGE_CHILD1_1997)
+qplot(data = mom.age.sex,
+      geom = "boxplot",
+      x = sex,
+      y = CV_BIO_MOM_AGE_CHILD1_1997,
+      fill = sex)
+```
+<font color="#157515">
+The data presents ages that should be evaluated for biological mothers below 10 years old, and above 60 years old.
+</font>
+
+The following creates a dataFrame and deletes those rows where biological age of mothers is less than 12 years old.
+
+```{r}
+mom.age.sex <- data.frame(mom.age.sex)
+mom.age.sex <- mom.age.sex[!(mom.age.sex$CV_BIO_MOM_AGE_CHILD1_1997<12),]
+qplot(data = mom.age.sex,
+      geom = "boxplot",
+      x = sex,
+      y = CV_BIO_MOM_AGE_CHILD1_1997,
+      fill = sex)
+```
+
+```{r}
+res.mother.highest.grade <- nlsy %>%
+  select(sex, CV_HGC_RES_MOM_1997)
+resident.mother.highest.grade <- res.mother.highest.grade %>%
+  mutate(CV_HGC_RES_MOM_1997 = recode_factor(CV_HGC_RES_MOM_1997,
+                                             `0` = "NONE",
+                                             `1` = "1ST GRADE",
+                                             `2` = "2ND GRADE",
+                                             `3` = "3RD GRADE",
+                                             `4` = "4TH GRADE",
+                                             `5` = "5TH GRADE",
+                                             `6` = "6TH GRADE",
+                                             `7` = "7TH GRADE",
+                                             `8` = "8TH GRADE",
+                                             `9` = "9TH GRADE",
+                                             `10` = "10TH GRADE",
+                                             `11` = "11TH GRADE",
+                                             `12` = "12TH GRADE",
+                                             `95` = "UNGRADED",
+                                             `13` = "1ST YEAR COLLEGE",
+                                             `14` = "2ND YEAR COLLEGE",
+                                             `15` = "3RD YEAR COLLEGE",
+                                             `16` = "4TH YEAR COLLEGE",
+                                             `17` = "4TH YEAR COLLEGE",
+                                             `18` = "4TH YEAR COLLEGE",
+                                             `19` = "4TH YEAR COLLEGE",
+                                             `20` = "4TH YEAR COLLEGE OR MORE"))
+
+mother.highest.grade <- resident.mother.highest.grade %>%
+  group_by(sex, CV_HGC_RES_MOM_1997) %>%
+  summarize(n = n())
+mother.highest.grade <- as_tibble(mother.highest.grade)
+plot.mom.grade <- ggplot(data = mother.highest.grade,
+                         aes(x = CV_HGC_RES_MOM_1997,
+                             y = n,
+                             fill = n))
+plot.mom.grade + geom_bar(stat = "identity") + 
+  guides(fill = guide_legend(title = "Individuals in each bin")) +
+  facet_grid(.~ sex) +
+  theme(axis.text.x=element_text(angle = 90, vjust = 0.5))
+
+
+
+
+
+
+```
+
+```{r}
+
+
+```
+
+
+```{r, fig.align='center', fig.width=7, fig.height=4}
+qplot(nlsy$CVC_ASSETS_FINANCIAL_30_XRND)
+
+table.mom.age <- table(nlsy$CV_HGC_RES_MOM_1997, nlsy$sex)
+table.mom.age
+```
