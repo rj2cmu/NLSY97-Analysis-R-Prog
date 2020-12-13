@@ -88,7 +88,7 @@ colnames(nlsy) <- c("PSTRAN_GPA.01_PSTR",
     "CV_HH_SIZE_2011",
     "CV_HH_UNDER_18_2011",
     "CV_HH_UNDER_6_2011",
-    "Highest_Degree_Prior_2011/12", #CV_HIGHEST_DEGREE_1112_2011
+    "Highest_Degree_Prior_2011.12", #CV_HIGHEST_DEGREE_1112_2011
     "Children_HH_2011", #CV_BIO_CHILD_HH_2011
     "Highest_Grade_Completed_2011", #YSCH-3112_2011
     "YSAQ-000A000001_2011", 
@@ -295,7 +295,7 @@ nlsy.recode <- select(nlsy.recode, Marijuana_1997, "%Ch.Dip.20_1997", "%Ch.Baby_
   Children_HH_2007,
   Children_HH_2009, 
   Family_Income_2011, 
-  "Highest_Degree_Prior_2011/12",
+  "Highest_Degree_Prior_2011.12",
   Children_HH_2011, 
   Highest_Grade_Completed_2011,
   Height.Inch_2011,
@@ -316,6 +316,8 @@ nlsy.recode <- select(nlsy.recode, Marijuana_1997, "%Ch.Dip.20_1997", "%Ch.Baby_
   ASSETS_DEBTS_30
  )
 
+nlsy.recode <- filter(nlsy.recode, !is.na(Income))
+  
 income.gender <- nlsy.recode %>%
   group_by(Sex) %>%
   summarize(average.income = mean(Income, na.rm = TRUE), 
@@ -406,11 +408,11 @@ ggplot(data = income.industries, aes(x = Industry_Code_2017, y = average.income,
   theme(axis.text.x=element_text(angle =- 90, vjust = 0.5)) + ylab("Average Income")
 ```
 ```{r, fig.height = 4, fig.width = 8}
-ggplot(data = nlsy.recode, aes(x = Income, y = Highest_Grade_Completed_2011 , colour = Industry_Code_2017 )) + geom_point() + stat_smooth(method = 'loess', formula = y ~ x, size = 1) + theme(axis.text.x=element_text(angle =- 90, vjust = 0.5)) + ylim(0,22)
+ggplot(data = nlsy.recode, aes(x = Income, y = Highest_Grade_Completed_2011 , colour = Industry_Code_2017, shape = Sex )) + geom_point() + stat_smooth(method = 'loess', formula = y ~ x, size = 1) + theme(axis.text.x=element_text(angle =- 90, vjust = 0.5)) + ylim(0,22)
 ```
 ```{r}
 income.lm.grade.ind.sex <- lm(Income ~ Highest_Grade_Completed_2011 + Industry_Code_2017 + Sex, data = nlsy.recode)
-summary(income.lm)
+summary(income.lm.grade.ind.sex)
 ```
 ```{r}
 confint(income.lm.grade.ind.sex, parm = "Industry_Code_2017")
@@ -419,38 +421,47 @@ confint(income.lm.grade.ind.sex, parm = "Sex")
 ```
 ```{r}
 income.lm.grade.sex <- lm(Income ~ Highest_Grade_Completed_2011 + Sex, data = nlsy.recode)
-summary(income.lm)
+summary(income.lm.grade.sex)
 ```
 
 ```{r}
 income.lm.sex <- lm(Income ~ Sex, data = nlsy.recode)
-summary(income.lm)
+summary(income.lm.sex)
+```
+```{r}
+income.lm.bio.child.sex <- lm(Income ~ Children_HH_2009 + Sex, data = nlsy.recode)
+summary(income.lm.grade.sex)
 ```
 ```{r}
 anova(update(income.lm.grade.ind.sex, . ~ . - Sex), income.lm.grade.ind.sex)
 ```
 
-#No. of Biological Children at home
+<font color="#157515">
+Income, sex and number of children. Would you expect income to increase regardless of gender as the family size increases? On the flip side, we want to explore whether a larger family size is correlated with a lack of education leading to a lower income across the board. If women are educated, they might have fewer children and that might contribute to their higher income. In order to do so, we have chosen the "biological children in household data" from 2009. We checked the data and it seemed to be replicated for all the years. We will run simple summaries and check for associations, next we will run a simple regression model to check for significance, and finally explore if there are any interactions between highest grade completed and  
+
+</font>
 
 ```{r}
 num.bio.child <- nlsy.recode %>%
-  group_by(Children_HH_2009) %>%
+  group_by(Children_HH_2009, Sex) %>%
   summarize(average.income = mean(Income, na.rm = TRUE))
+
+num.bio.child <- filter(num.bio.child, !is.na(average.income),!is.na(Children_HH_2009))
 num.bio.child
 ```
 
 ```{r, fig.height = 4, fig.width = 9}
-ggplot(data = num.bio.child, aes(x = Children_HH_2009, y = average.income, fill = average.income)) + 
+ggplot(data = num.bio.child, aes(x = Children_HH_2009, y = average.income, fill = Sex)) + 
   geom_bar(position="dodge", stat="identity") + 
-  theme(axis.text.x=element_text(angle = 0, vjust = 0.5), legend.position = "none") + 
+  theme(axis.text.x=element_text(angle = 0, vjust = 0.5)) + 
   labs( x = "Number of Biological Children", y = "Average Income ($)")
 ```
 
 
 ```{r}
-num.bio.child <- nlsy.recode %>%
-  group_by(Children_HH_2009, na.rm = TRUE) %>%
-  summarize(mean = mean(Income, na.rm = TRUE),
+used.coca <- nlsy.recode %>%
+  group_by(Ever_Used_Coca_1998, Sex) %>%
+  summarize(mean = mean(Income),
             lower = t.test(Income, na.rm = TRUE)$conf.int[1],
             upper = t.test(Income, na.rm = TRUE)$conf.int[2],
             is.signif = as_factor(
@@ -460,5 +471,17 @@ num.bio.child <- nlsy.recode %>%
                 is.signif = 1
               }
             ), .groups = 'keep')
-num.bio.child
+used.coca
+
+```
+```{r}
+num.bio.child <- nlsy.recode %>%  
+  group_by(Children_HH_2009, Sex) %>%
+  summarize(mean = mean(Income[Sex == "Men"]) -  mean(Income[Sex == "Female"]),
+            lower = t.test(x = Income[Sex == "Men"],
+                            y = Income[Sex == "Female"])$conf.int[1],
+            upper = t.test(x = Income[Sex == "Men"],
+                            y = Income[Sex == "Female"])$conf.int[2], .groups = "keep")
+
+
 ```
