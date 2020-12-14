@@ -339,8 +339,8 @@ From the simple regression, it seems that on average women earn `r round(coef(lm
 lm.income.sex.marital <- lm(Income ~ Sex + MaritalStatus_2017, data = nlsy.recode)
 summary(lm.income.sex.marital)
 ```
-
-It seems that on average married person earns `r round(coef(lm.income.sex.marital)["MaritalStatus_2017Married "], 0)*` more than the baseline (never-married). This seems to be statistically significant with a p-value of `r lm.income.sex.marital$p.value`.
+<font color="#157515">
+All else considered constant, It seems that on average a married person earns `r round(coef(lm.income.sex.marital)["MaritalStatus_2017Married "], 0)*` more than the baseline (never-married). This seems to be statistically significant with a p-value of `r lm.income.sex.marital$p.value`.
 </font>
 
 ```{r}
@@ -356,7 +356,7 @@ lm.marital.interact <- update(lm.income.sex.marital, .~. + MaritalStatus_2017 * 
 summary(lm.marital.interact)
 ```
 <font color="#157515">
-This interactive model corresponds to differences in earnings across gender and marital status that are not accounted for by a model that assumes independent effects for Marital status and gender. For instance, here we only see that the income difference among married men and married women is $16396 less than the difference between single men and single women. However, we cannot conclude that marital status as a whole is a factor that is highly associated with the income gap between men and women. 
+This interactive model corresponds to differences in earnings across gender and marital status that are not accounted for by a model that assumes independent effects for Marital status and gender. For instance, here we only see that the income difference among married men and married women is `r round(abs(coef(lm.marital.interact)["SexFemale:MaritalStatus_2017Married "]),0)*-1` less than the difference between single men and single women. However, we cannot conclude that marital status as a whole is a factor that is highly associated with the income gap between men and women. 
 </font>
 
 
@@ -442,6 +442,14 @@ From the simple regression, it seems that on average with each additional child 
 </font>
 
 ```{r}
+anova(update(income.lm.bio.child.sex, . ~ . -Children_HH_2009),income.lm.bio.child.sex)
+```
+
+<font color="#157515">
+From the analysis of variable table, children are not statistically significant predictor of income in the model. We also want to explore the interactive model:
+</font>
+
+```{r}
 lm.child.interact <- update(income.lm.bio.child.sex , .~. + Children_HH_2009 * Sex)
 summary(lm.child.interact)
 ```
@@ -450,19 +458,6 @@ summary(lm.child.interact)
 When we put these variables to the test, it shows a highly significant finding. This interactive model corresponds to differences in earnings across gender and biological children in household that are not accounted for by a model that assumes independent effects of each. It seems that on average the income difference between women with children and men with children is $`r round(coef(lm.child.interact )["SexFemale:Children_HH_2009"], 0)*-1` less than the difference between women and men that don't have children. This finding is highly significant according to the data. It's also interesting to note that now each additional child brings in `r round(coef(lm.child.interact )["Children_HH_2009"], 0)` more with income and it is statistically significant in the interaction.
 </font>
 
-
-```{r}
-nlsy.child.recode <- mutate(nlsy.child.recode, Children_HH_2009 = recode_factor(Children_HH_2009,
-                                `0` = "Child.0",
-                                `1` = "Child.1",
-                                `2` = "Child.2",
-                                `3` = "Child.3",
-                                `4` = "Child.4",
-                                `5` = "Child.5"))
-
-income.lm.bio.child.sex.factor <- lm(Income ~ Sex + Children_HH_2009, data = nlsy.child.recode)
-summary(income.lm.bio.child.sex.factor)
-```
 
 <font color="#157515">
 Income, Sex, and Highest Grade Completed:
@@ -475,22 +470,9 @@ ggplot(data = nlsy.recode, aes(x = Highest_Grade_Completed_2011, y = Income , co
 ```
 
 <font color="#157515">
-In the graph, we can see an evolution of the income gap between men and women, depending on the highest degree completed. The income difference between men and women becomes smaller as the degree completed approaches 12, that is "12th grade" or equivalent to a high school diploma. Before exploring this further, we want to analyze other interesting variables such as marijuana consumption with highest degree completed, sex and average income. 
+In the graph, we can see an evolution of the income gap between men and women, depending on the highest degree completed. The income difference between men and women becomes smaller as the degree completed approaches 12, that is "12th grade" or equivalent to a high school diploma.
 </font>
 
-```{r}
-nlsy.recode <- nlsy.recode %>%
-  mutate(Marijuana_1997 = recode_factor(Marijuana_1997,
-                                             `0` = "No",
-                                             `1` = "Yes"))
-
-ggplot(data = nlsy.recode, aes(x = Highest_Grade_Completed_2011, y = Income , colour = Marijuana_1997, shape = Sex)) + geom_point() + stat_smooth(method = 'lm', formula = y ~ x, size = 1, se = FALSE) +
-  theme(axis.text.x=element_text(angle = 0, vjust = 0.5)) + xlim(0,22) + 
-  labs( x = "Highest Degree Completed", y = "Average Income ($)")
-```
-<font color="#157515">
-This graph shows the income in 2011 of those who had consumed marijuana by 1997, differentiated by gender across different education levels. As also evidenced in the previous graph which didn't include the marijuana consumption, the gap between those at high school level is smaller to those who have completed lower levels of education. Between 12 and 17 years of study: high school or higher, having consumed marijuana by 1997 doesn't present a difference in income for 2011, but the income gap by gender still remains. This is just an interesting pattern we wanted to explore; however, we cannot state that our claim is conclusive. 
-</font>
 
 ```{r}
 nlsy.recode <- mutate(nlsy.recode,Highest_Grade_Completed_2011 = recode_factor(Highest_Grade_Completed_2011,
@@ -517,45 +499,31 @@ nlsy.recode <- mutate(nlsy.recode,Highest_Grade_Completed_2011 = recode_factor(H
                                              `19` = "7TH YEAR COLLEGE",
                                              `20` = "8TH YEAR COLLEGE OR MORE"))
 
-nlsy.recode <- filter(nlsy.recode, !is.na(Marijuana_1997))
+
 income.lm.sex.degree <- lm(Income ~ Sex + Highest_Grade_Completed_2011, data = nlsy.recode)
 summary(income.lm.sex.degree)
 ```
 
-```{r}
-income.lm.sex.degree.m <- lm(Income ~ Sex + Highest_Grade_Completed_2011 + Marijuana_1997, data = nlsy.recode)
-summary(income.lm.sex.degree.m)
-```
-
 <font color="#157515">
-All else considered constant, those that used marijuana by 1997 compared to the baseline of those that did not earn approximately `r round(abs(coef(income.lm.sex.degree.m)["Marijuana_1997Yes"]),0)` more. However, this difference is not statistically significant for our analysis. Marijuana use was interesting to explore; but for the purpose of further analysis; it's best to drop this variable and check if there's an interaction between gender and highest degree completed. 
+All else considered constant, the regression does not show us anything that is statistically significant across the different grade completed levels. We do still want to see if there is an interaction between gender and highest degree completed for income gap 
 </font>
 
+
 ```{r}
+high.grade <- table(nlsy.recode$Highest_Grade_Completed_2011)
 nlsy.lm.interact.degree <- update(income.lm.sex.degree, . ~ . + Highest_Grade_Completed_2011*Sex)
 summary(nlsy.lm.interact.degree)
 ```
 
 <font color="#157515">
-This interactive model corresponds to differences in earnings across gender and the highest grade completed that are not accounted for by a model that assumes independent effects for highest grade completed and gender. 
-
-In one of the instances, we see that the income difference among men whose highest grade completed is 2nd year of college and women whose highest grade completed is 2nd year of college is $25523 more than the difference between men and women in the baseline group. However, this difference does not seem to be statistically significant as is the interaction with the rest of the associations in this model. 
+This interactive model corresponds to differences in earnings across gender and the highest grade completed that are not accounted for by a model that assumes independent effects for highest grade completed and gender. We notice that now the variable highest grade completed as "4th Grade" becomes statistically significant. The coefficient here of `r round(abs(coef(nlsy.lm.interact.degree )["Highest_Grade_Completed_20114TH GRADE"]),0)`  and in the interaction variable of `r round(abs(coef(nlsy.lm.interact.degree ["SexFemale:Highest_Grade_Completed_20114TH GRADE"]),0)` will not make sense and show us nothing because the number of observations for the 4th Grade in our data-set at this point is only `r high.grade["4TH GRADE"]`. The interaction term for "second year college and female" shows us that the income difference between women who have completed 2nd year of college and men who have completed 2nd year of college is `r round(abs(coef(nlsy.lm.interact.degree )["SexFemale:Highest_Grade_Completed_20112ND YEAR COLLEGE" ]),0)` more than the difference between women and men with no grades completed.
 </font>
 
-```{r ,fig.height = 4, fig.width = 8}
-ggplot(data = income.industries, aes(x = Industry_Code_2017, y = average.income, colour = Sex )) + 
-  geom_point() + stat_smooth(method = 'lm', size = 1, fullrange = TRUE) + 
-  theme(axis.text.x=element_text(angle =- 90, vjust = 0.5)) + ylab("Average Income")
-```
-```{r, fig.height = 4, fig.width = 8}
-ggplot(data = nlsy.recode, aes(x = Income, y = Highest_Grade_Completed_2011 , colour = Industry_Code_2017, shape = Sex )) + geom_point() + stat_smooth(method = 'loess', formula = y ~ x, size = 1) + theme(axis.text.x=element_text(angle =- 90, vjust = 0.5)) + ylim(0,22)
-```
-```{r}
-income.lm.grade.ind.sex <- lm(Income ~ Highest_Grade_Completed_2011 + Industry_Code_2017 + Sex, data = nlsy.recode)
-summary(income.lm.grade.ind.sex)
-```
+<font color="#157515">
+Moving forward we want to explore whether industries are related to an income gap between genders. With the following basis:
 
-
+Income, Sex, and Industry: Is there a discrimination in Income across genders in specific Industries? Typically, male-centric industries like mining, construction and manufacturing would not see higher salaries for women. However, in the entertainment industry or perhaps financial institutions; where both genders contribute; could we possibly see a difference in their earnings? 
+</font>
 
 ```{r}
 nlsy.recode <- data_frame(nlsy.recode)
@@ -584,73 +552,123 @@ decode <- function(number) {
   return (text)}
 
 nlsy.recode[["Industry_Code_2017"]] <- sapply(nlsy.recode[["Industry_Code_2017"]], decode)
+```
 
-income.industries <- nlsy.recode %>%
+<font color="#157515">
+First, we look at the general average income in each industry irrespective of gender, showcased by the plot below.
+</font>
+
+```{r,fig.height = 10, fig.width = 20}
+#general average income without gender grouping
+income.industries.avg <- nlsy.recode %>%
+  group_by(Industry_Code_2017) %>%
+  summarize(average.income = mean(Income, na.rm = TRUE), .groups = 'keep')
+
+#average income across industries with gender grouping
+income.industries.sex <- nlsy.recode %>%
   group_by(Sex, Industry_Code_2017) %>%
   summarize(average.income = mean(Income, na.rm = TRUE), .groups = 'keep')
 
-income.industries
 
-
-
-```
-
-
-```{r, fig.height = 4, fig.width = 8}
-ggplot(data = income.gender.2, aes(x = MaritalStatus_2017, y = average.income, fill = Sex)) + 
-  geom_bar(stat = "identity") + facet_grid(.~Sex) + coord_flip() + 
-  theme(axis.text.x=element_text(angle =- 90, vjust = 0.5), legend.position = "none") + 
-  labs( x = "Marital Status", y = "Average Income" )
-```
-```{r}
-ggplot(data = nlsy.recode, aes(x = Highest_Grade_Completed_2011, y = Income , colour = Sex )) + geom_point() + stat_smooth(method = 'loess', formula = y ~ x, size = 1) + theme(axis.text.x=element_text(angle = 0, vjust = 0.5)) + xlim(0,22) + 
-  labs( x = "Highest Degree Completed", y = "Average Income ($)")
+ggplot(income.industries.avg, aes(x = reorder(Industry_Code_2017, average.income), y = average.income, fill = Industry_Code_2017)) + geom_bar(stat = "identity") +
+  theme(axis.text.x = element_text(angle = 60, vjust = 1, hjust = 1)) + labs( x = "Industry", y= "Average Income")
 ```
 <font color="#157515">
-In the graph we can see an evolution of the income gap between men and women, depending on the highest degree completed (not using the grades as a discrete factor variable here). We don't consider in the graph the data related to non-completed undergrad studies. It evidences that for those who are close to 12 years of completed studies, equivalent to high school completion, the income is lower in average to those who didn't completed high school studies, and to those who have higher degree levels. It also shows that the income gap is in average lower between those who are close to 12 years of studies.
+It seems like the average income in the mining industry is the highest versus accomodations and food services at the lowest point in the given data-set. Since, we already have information available for 2011 in the data-set, we want to explore if the income gap has changed over time within industries before we examine it specifically for 2017.
+</font>
+
+```{r}
+#preliminary re-coding for Industries for 2011 and simple summaries:
+nlsy.recode[["Industry_Code_2011"]] <- sapply(nlsy.recode[["Industry_Code_2011"]], decode)
+
+#general average income without gender grouping
+income.industries.avg.2011 <- nlsy.recode %>%
+  group_by(Industry_Code_2011) %>%
+  summarize(average.income = mean(Income, na.rm = TRUE), .groups = 'keep')
+
+#average income across industries with gender grouping
+income.industries.sex.2011 <- nlsy.recode %>%
+  group_by(Sex, Industry_Code_2011) %>%
+  summarize(average.income = mean(Income, na.rm = TRUE), .groups = 'keep')
+```
+
+```{r}
+income.industries.sex.2011$year = 2011
+income.industries.sex$year = 2017 
+
+income.industries.sex.2011.r <- income.industries.sex.2011 %>% 
+  rename(Industry = Industry_Code_2011)
+
+income.industries.sex.2017.r <- income.industries.sex %>% 
+  rename(Industry = Industry_Code_2017)
+
+ind.income.sex.time <- rbind(income.industries.sex.2017.r, income.industries.sex.2011.r)
+```
+
+```{r,fig.height = 10, fig.width = 15}
+ggplot(data = ind.income.sex.time, aes(x = year, y = average.income, color = Sex)) +
+  facet_wrap( ~ Industry) +
+  geom_point() +
+  geom_smooth(method = "lm") + labs(x = "Year", y = "Average Income")
+```
+
+<font color="#157515">
+The graphs are beautiful! They show the average incomes between 2011 and 2017 (considering only the two data-points) differentiated by sex; this allows us to see the gaps between the incomes. Generally, the income gaps are lowering overtime between the genders; however, we cannot say that our claim is statistically significant. It is interesting to see that there's a large gap in average income for the finance, insurance and the real estate sector as we had previously hypothesized. 
+
+Now that we've examined the average income overtime; lets be more specific in the income gap assessment for the later year of 2017.
+</font>
+
+
+
+```{r}
+nlsy.recode.ind <- filter(nlsy.recode, !(Industry_Code_2017 == " ACTIVE DUTY MILITARY"))
+  
+gap.data.conf.ind <- nlsy.recode.ind %>%
+  group_by(Industry_Code_2017) %>%
+  summarize(income.gap = mean(Income[Sex == "Men"], na.rm = TRUE) -
+              mean(Income[Sex == "Female"], na.rm = TRUE),
+            lower = t.test(Income ~ Sex)$conf.int[1],
+            upper = t.test(Income ~ Sex)$conf.int[2],
+            is.significant = as.numeric(t.test(Income ~ Sex)$p.value < 0.05), .groups = "keep")
+gap.data.conf.ind
+```
+```{r,fig.height = 10, fig.width = 20}
+ggplot(gap.data.conf.ind, aes(x = reorder(Industry_Code_2017, income.gap), y = income.gap, fill = Industry_Code_2017)) + geom_bar(stat = "identity") +
+  theme(axis.text.x = element_text(angle = 60, vjust = 1, hjust = 1)) + labs( x = "Industry", y= "Income Gap") + ggtitle("Income gap between men and women, by Industry") + geom_errorbar(aes(ymax = upper, ymin = lower), width = 0.1, size = 1)
+```
+<font color="#157515">
+We notice the highest income gap is in the financial and real estate institutions and this gap is statistically significant. However, if we look at industries such as wholesale trade, mining, utilities and information&communications, the error bars cross the 0-axis and this shows that the income gap here is not statistically significant. We will now move on to running regressions:  
 </font>
 
 
 ```{r}
-nlsy.recode <- nlsy.recode %>%
-  mutate(Marijuana_1997 = recode_factor(Marijuana_1997,
-                                             `0` = "No",
-                                             `1` = "Yes"))
-
-ggplot(data = nlsy.recode, aes(x = Highest_Grade_Completed_2011, y = Income , colour = Marijuana_1997,shape = Sex)) + geom_point() + stat_smooth(method = 'loess', formula = y ~ x, size = 1) + theme(axis.text.x=element_text(angle = 0, vjust = 0.5)) + xlim(0,22) + 
-  labs( x = "Highest Degree Completed", y = "Average Income ($)")
+income.lm.grade.ind.sex <- lm(Income ~ Sex + Industry_Code_2017, data = nlsy.recode)
+summary(income.lm.grade.ind.sex)
 ```
 
-
 <font color="#157515">
-This graph shows how the income in 2011 of those who had consumed marijuana by 1997, differenciate by gender across different education levels.As also evidenced in the previous graph which didn't include the marijuana consumption, the gap between those at high school level is larger to those between a higher education level.
-Between 12 and 17 years of study: high school or higher, having consumer marijuana by 1997 doesn't present a difference in income for 2011, but the income gap by gender still remains.
+There are 9 statistically significant coefficients across the industries. We are going to explore the interaction term with gender.
 </font>
 
 
 ```{r}
-confint(income.lm.grade.ind.sex, parm = "Industry_Code_2017")
-confint(income.lm.grade.ind.sex, parm = "Highest_Grade_Completed_2011")
-confint(income.lm.grade.ind.sex, parm = "Sex")
+anova(update(income.lm.grade.ind.sex , . ~ . - Industry_Code_2017), income.lm.grade.ind.sex)
 ```
-
-
-```{r}
-anova(update(income.lm.grade.ind.sex, . ~ . - Sex), income.lm.grade.ind.sex)
-```
-
-
-
-
 
 <font color="#157515">
-Interesting, could adding the highest degree earned to the existing model exacerbate or mitigate the income gap between men and women?
+Industries turn out to be a highly statistically significant predictor of income in the model. You can see this also by looking at the coefficient estimates and standard errors — the estimated coefficients are very large, with relatively small standard errors. 
 </font>
 
+
 ```{r}
-income.lm.bio.child.sex.edu <- lm(Income ~ Children_HH_2009 + Sex + Highest_Grade_Completed_2011, data = nlsy.recode)
-summary(income.lm.bio.child.sex.edu)
+nlsy.lm.interact.ind <- update(income.lm.grade.ind.sex, . ~ . + Industry_Code_2017*Sex)
+summary(nlsy.lm.interact.ind)
 ```
+
+<font color="#157515">
+The income difference among women and men in the finance, insurance and real estate industry is `r round(abs(coef(nlsy.lm.interact.ind)["SexFemale:Industry_Code_2017 FINANCE, INSURANCE, AND REAL ESTATE "]),0)*-1` less than the difference between women and men in the baseline defined here as ACS Special codes. 
+</font>
+
 
 <font color="#157515">
 Though part of the unconventional debate, there are studies that examine the impact of physical appearance on the income gap. To narrow down our analysis, we are going to assess physical appearance through the Body Mass Index (BMI) parameters stated below and evaluate it with the assumption that those that fall within a normal range are physically attractive and thus might earn more regardless of gender. Let's explore this further. 
@@ -679,10 +697,17 @@ lm.bmi <- lm(Income ~ Sex + bmi, data = nlsy.recode)
 summary(lm.bmi)
 ```
 
+<font color="#157515">
+With each unit increase in the body mass index (BMI), the income decreases by `r round(abs(coef(lm.bmi)["bmi"]),0)*-1`.
+</font>
 
 ```{r}
 anova(update(lm.bmi, . ~ . - bmi), lm.bmi)
 ```
+
+<font color="#157515">
+BMI turns out to be statistically significant predictor of income in the model. We want to see the interaction term with gender. 
+</font>
 
 ```{r}
 lm.bmi.interact <- update(lm.bmi, . ~ . + Sex*bmi)
@@ -691,7 +716,7 @@ summary(lm.bmi.interact)
 ```
 
 <font color="#157515">
-All else constant, we see that women with higher BMI have a disproportionate gap versus men with higher BMI. [recheck] 
+The interaction term SexFemale:bmi shows that with each unit increase in BMI the income gap increases. 
 </font>
 
 ```{r}
@@ -710,15 +735,9 @@ used.coca <- nlsy.recode %>%
 used.coca
 
 ```
-```{r}
-num.bio.child <- nlsy.recode %>%  
-  group_by(Children_HH_2009, Sex) %>%
-  summarize(mean = mean(Income[Sex == "Men"]) -  mean(Income[Sex == "Female"]),
-            lower = t.test(x = Income[Sex == "Men"],
-                            y = Income[Sex == "Female"])$conf.int[1],
-            upper = t.test(x = Income[Sex == "Men"],
-                            y = Income[Sex == "Female"])$conf.int[2], .groups = "keep")
-```
+
+
+
 
 ```{r}
 education.indicator <- filter(nlsy.recode, !(nlsy.education$Highest_Grade_Completed_2011 == "NONE"),
@@ -778,6 +797,7 @@ worth.30.means <- nlsy.recode %>%
                 is.signif = 1
               }
             ), .groups = 'keep')
+
 worth.30.means.plot <- ggplot(data = worth.30.means,
                               aes(x = Sex, y = hh.worth.30,
                                   fill = Sex))
