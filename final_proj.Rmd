@@ -1,7 +1,7 @@
 ---
-title: "NLSY97 Analysis (Based on Gender)"
-author: "Anum Malik, Rishabh Jain, Javier Rico Aristizabal"
-date: ''
+title: "NLSY97 Snapshot Analysis (Based on Gender)"
+author: "Anum Malik <anumm>, Rishabh Jain <rj2>, Javier Rico Aristizabal <jricoari>"
+date: '14th December 2020, Monday'
 output: html_document
 ---
 
@@ -367,7 +367,7 @@ This interactive model corresponds to differences in earnings across gender and 
 
 
 <font color="#800000">
-A natural shift from marriage would be children. Income, sex and number of children. Would you expect income gap to decrease regardless of gender as the family size increases? There are multiple theories that come into play here. Perhaps contributing factors could be a sense of income security leading to both genders having more children. On the flip side, the gap could exacerbate given that more and more women on average might switch to more lax jobs or choose to stay at home altogether. We think this is an interesting variable to explore. Additionally, we want to see whether a larger family size is correlated with a lack of education leading to a lower income across the board. If women are educated, they might have fewer children and that might contribute to their higher income and a reduction in the gap. 
+A natural shift from marriage would be children. Income, sex and number of children. Would you expect income gap to decrease regardless of gender as the family size increases? There are multiple theories that come into play here. Perhaps contributing factors could be a sense of income security leading to both genders having more children. On the flip side, the gap could exacerbate given that more and more women on average might switch to more lax jobs or choose to stay at home altogether. We think this is an interesting variable to explore.
 
 In order to , we have chosen the "biological children in household data" from 2009. We checked the data and it seemed to be replicated for all the years. We will run simple summaries and check for associations, next we will run a simple regression model to check for significance, and finally explore if there are any interactions between highest grade completed, number of children, sex and income.  
 </font>
@@ -727,30 +727,8 @@ The interaction term SexFemale:bmi negative coefficient shows that with each uni
 </font>
 
 <font color="#800000">
-We want to explore whether the use of cocaine will effect income. We think that the use of cocaine will affect income levels regardless of gender; however, it will not have an impact on the income gap. This time we are not going to delete the NA values in the data, because those people chose not to respond and it could fall under any of the two categories: users vs those that have never used. We'll start with a simple summary table of the income gap. 
+We want to explore whether the use of cocaine will affect income. We think that the use of cocaine will affect income levels regardless of gender; however, it will not have an impact on the income gap. This time we are not going to delete the NA values in the data, because those people chose not to respond and it could fall under any of the two categories: users vs those that have never used. We'll start with a simple summary table of the income gap. 
 </font>
-
-```{r, warning = FALSE}
-used.coca <- nlsy.recode %>%
-  group_by(Ever_Used_Coca_1998) %>%
-  summarize(income.gap = mean(Income[Sex == "Men"], na.rm = TRUE) - 
-              mean(Income[Sex == "Female"], na.rm = TRUE),
-            lower = t.test(Income)$conf.int[1],
-            upper = t.test(Income)$conf.int[2],
-            is.significant = as.numeric(t.test(Income ~ Sex)$p.value < 0.05), .groups = "keep")
-used.coca
-```
-```{r, warning = FALSE}
-ggplot(data = used.coca, aes(x = Ever_Used_Coca_1998, y = income.gap,
-                            fill = is.significant)) +
-  geom_bar(stat = "identity") +
-  xlab("Cocaine Use") + 
-  ylab("Income gap($)") +
-  ggtitle("Income gap between men and women, by Cocaine Use") + 
-  guides(fill = FALSE) +
-  geom_errorbar(aes(ymax = upper, ymin = lower), width = 0.1, size = 1) +
-  theme(text = element_text(size=12)) 
-```
 
 ```{r, warning = FALSE}
 nlsy.recode <- mutate(nlsy.recode,Ever_Used_Coca_1998 = recode_factor(Ever_Used_Coca_1998,
@@ -760,7 +738,16 @@ qplot(data = nlsy.recode, geom = "boxplot", x = Ever_Used_Coca_1998, y = Income,
 ```
 
 <font color="#800000">
-In the previous box-plot, we can see that the average income is same regardless of whether you have used cocaine.
+In the previous box-plot, we can see that the average income is the same regardless of whether you have used cocaine.
+</font>
+
+```{r, warning=FALSE}
+coca.income <- ggplot(nlsy.recode, aes(x = Income))
+coca.income + geom_density(aes(fill = Ever_Used_Coca_1998), alpha = 0.3) + scale_color_manual(values = c("#999999", "#E69F00", "#56B4E9")) + scale_fill_manual(values = c("#999999", "#E69F00", "#56B4E9")) + labs(x="Income in $", y="Respondent density", title="Density Function for Income (Separated by Cocaine Usage)")
+```
+
+<font color="#800000">
+The continuous frequency distribution also tells us that the mean income values are approximately the same with the data left skewed (as expected because it is for income). A final check of significance is the linear regression model.
 </font>
 
 ```{r, warning = FALSE}
@@ -769,7 +756,7 @@ summary(coca.income.lm)
 ```
   
 <font color="#800000">
-As seen from the results above, cocaine consumption does not have significant effect on income.
+As seen from the regression and graphs above, cocaine consumption does not have a significant effect on income.
 
 Now let's see the household worth for the respondents at age of 30. 
 </font>
@@ -800,7 +787,7 @@ worth.30.means.plot + geom_bar(position="dodge", stat="identity") +
 ```
 
 <font color="#800000">
-In the boxplot we can see than in averge, household worth of the respondants at age of 30 is higher for men compared to female.
+In the boxplot we can see than in average, household worth of the respondants at age of 30 is higher for men compared to female.
 </font>
 
 ```{r, warning = FALSE}
@@ -911,7 +898,7 @@ Below plot confirms the same. We've removed gender from the analysis and we see 
 ggplot(nlsy.recode, aes(x=ASSETS_DEBTS_30, y=Income)) + geom_point(size=0.2) + geom_smooth(method="loess", se=FALSE) + labs(x="Debt at the age of 30 (in $)", y="Income in $", title="Debt at 30 vs. Income")
 ```
 <font color="#800000">
-We want to now plot all our variables against a final regression model. We've used eight variables in our analysis and regardless of whether they are significant or not we run the linear regression plots as a diagnostic tool. After that, we will run the variables that fit our analysis better. 
+We want to now plot all our variables against a final regression model. We've used eight variables in our analysis and regardless of whether they are significant or not we run the linear regression plots as a diagnostic tool.
 </font>
 
 ```{r, warning=FALSE, fig.height = 6, fig.width = 10}
@@ -920,14 +907,17 @@ par(mfrow = c(2, 2))
 plot(lm.final.all)
 ```
 <font color="#800000">
-We want to now plot all our variables against a final regression model. We've used eight variables in our analysis and regardless of whether they are significant or not we run the linear regression plots. After that, we will run the variables that fit our analysis better. 
+Residuals vs Fitted: very few residual values are away from the fitted line and most of them are clustered around the predicted regression line. Also as visible, the red line is approximately horizontal at zero. This shows us that our model has a good linear regression fit.
+
+Normal QQ: This graph indicates if the residual values are normally distributed or not. Our model does fairly well on this parameter as well. 
+
+Scale - Location: It can be seen that the variability (variances) of the residual points increases with the value of the fitted outcome variable, suggesting non-constant variances in the residuals errors (or heteroscedasticity).
+
+Residuals vs Leverage: This graph shows the presence of outliers in the dependent and independent variables. Most of the data points are within the 3 standard deviation. This also conforms with the empirical rule.
 </font>
 
-```{r, warning=FALSE, fig.height = 6, fig.width = 10}
-lm.final.sig <- lm(Income ~ MaritalStatus_2017 + Children_HH_2011 + bmi + HH_NET_WORTH_30 + ASSETS_DEBTS_30, data = nlsy.recode)
-par(mfrow = c(2, 2))
-plot(lm.final.sig)
-```
 
-
+<font color="#800000">
+In conclusion, even though we took eight variables from our data-set and they all fit the linear model to some degree. The most significant impact on income gap was seen for the interactive variables between Sex and Industry Code as well as Sex and Marital status; specifically for married women and men. In our analysis, we also thought to shed some light on the impact of physical appearance using BMI on income gap. This also proved to be statistically significant. We expected a significant impact of the highest grade completed on the income gap but it proved to be insignificant across all levels of education. Furthermore, the number of biological children ought to have shown a clear direction with the gap widening as the number of children increased. This also proved to be insignificant. The scope of this project limited the factor selection; however, if a larger pool of factors is considered, we believe the regression model would have had better results.   
+</font>
 
